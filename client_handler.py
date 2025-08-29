@@ -206,25 +206,6 @@ async def got_date_to(msg: Message, state: FSMContext):
     await state.set_state(Booking.wait_for_chooseroom)
     await msg.answer("Выберите комнату:", reply_markup=rooms_kb())
 
-# @client_router.message(Booking.wait_for_date2)
-# async def got_date_to(msg: Message, state: FSMContext):
-    
-#     d_to = parse_date(msg.text)
-    
-#     if not d_to:
-#         await msg.answer("Не понял дату. Пример: 12.09.2025")
-#         return
-#     data = await state.get_data()
-#     d_from = parse_date(data["date_from"])
-    
-#     if d_to <= d_from:
-#         await msg.answer("Дата выезда должна быть ПОСЛЕ даты заезда. Попробуйте ещё раз.")
-#         return
-#     await state.update_data(date_to=d_to.isoformat())
-#     await state.set_state(Booking.wait_for_chooseroom)
-#     await msg.answer("Выберите комнату:", reply_markup=rooms_kb())
-
-
 
 
 
