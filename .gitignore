@@ -5,3 +5,5 @@ __pycache__/
 .venv
 .vscode
 img/*
+db.cpython-313.pyc
+booking_db.db

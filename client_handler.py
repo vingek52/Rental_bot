@@ -9,6 +9,9 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.enums.parse_mode import ParseMode
 from aiogram.types import FSInputFile
 from aiogram.types import InputMediaPhoto
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from database.models import Order
 
 
 client_router = Router()
@@ -205,7 +208,7 @@ async def got_date_to(msg: Message, state: FSMContext):
     await state.update_data(date_to=d_to.isoformat())
     await state.set_state(Booking.wait_for_chooseroom)
     await msg.answer("Выберите комнату:", reply_markup=rooms_kb())
-
+    
 
 
 
@@ -229,10 +232,14 @@ async def choose_room(cb: CallbackQuery, state: FSMContext):
     await cb.answer()
 
 @client_router.callback_query(Booking.wait_for_confirm, F.data == "confirm:yes")
-async def confirm(cb: CallbackQuery, state: FSMContext):
+async def confirm(cb: CallbackQuery, state: FSMContext, session: AsyncSession):
     data = await state.get_data()
     # здесь ты делаешь запись в БД/проверку доступности и т.п.
     await cb.message.answer("Бронь принята ✅\nМы свяжемся с вами.", reply_markup=come_menu())
+    session.add(Order(name = data["name"],
+                      date_from = data["date_from"],
+                      date_to = data["date_to"],
+                      room = ["room"]))
     await state.clear()
     await cb.answer()
 
