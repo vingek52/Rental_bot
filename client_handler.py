@@ -41,14 +41,13 @@ def go_order():
 async def start_menu(message: types.Message):
     await message.answer_photo(photo = "https://cdn2.divan.ru/img/v1/sf9i8YRoVw34ZNh4LXzWT7om6dloRy_sUaEK3_8MNps/rs:fit:1920:1440:0:0/g:ce:0:0/bg:ffffff/q:85/czM6Ly9kaXZhbi9ja2VkaXRvci93aWtpLWFydGljbGUvMjU3MC82M2M1NWQ5OTY3ODhiLmpwZw.jpg",
                                caption = "Привет, это бот для снятия жилья в моих хоромах, выбери раздел для просмотра", reply_markup=start_kb())
-    await message.answer()
 
 
 @client_router.callback_query(F.data == "start_menu")
 async def start(callback: CallbackQuery):
     await callback.message.answer_photo(photo = "https://cdn2.divan.ru/img/v1/sf9i8YRoVw34ZNh4LXzWT7om6dloRy_sUaEK3_8MNps/rs:fit:1920:1440:0:0/g:ce:0:0/bg:ffffff/q:85/czM6Ly9kaXZhbi9ja2VkaXRvci93aWtpLWFydGljbGUvMjU3MC82M2M1NWQ5OTY3ODhiLmpwZw.jpg",
                             caption = "Привет, это бот для снятия жилья в моих хоромах, выбери раздел для просмотра", reply_markup=start_kb())
-    await callback.answer()
+    #await callback.answer()
 
 
 @client_router.callback_query(F.data == "room1")
@@ -231,15 +230,41 @@ async def choose_room(cb: CallbackQuery, state: FSMContext):
     await cb.message.answer(text, reply_markup=confirm_kb())
     await cb.answer()
 
+# @client_router.callback_query(Booking.wait_for_confirm, F.data == "confirm:yes")
+# async def confirm(cb: CallbackQuery, state: FSMContext, session: AsyncSession):
+#     data = await state.get_data()
+#     # здесь ты делаешь запись в БД/проверку доступности и т.п.
+#     await cb.message.answer("Бронь принята ✅\nМы свяжемся с вами.", reply_markup=come_menu())
+#     session.add(Order(name = data["name"],
+#                       date_from = data["date_from"],
+#                       date_to = data["date_to"],
+#                       room = ["room"]))
+#     await state.clear()
+#     await cb.answer()
 @client_router.callback_query(Booking.wait_for_confirm, F.data == "confirm:yes")
 async def confirm(cb: CallbackQuery, state: FSMContext, session: AsyncSession):
     data = await state.get_data()
-    # здесь ты делаешь запись в БД/проверку доступности и т.п.
+
+    # Базовая валидация на случай пропусков
+    for k in ("name", "date_from", "date_to", "room"):
+        if not data.get(k):
+            await cb.message.answer("Не все данные заполнены. Начните заново: /order", reply_markup=come_menu())
+            await state.clear()
+            await cb.answer()
+            return
+
+    # Сохраняем бронь
+    order = Order(
+        name=data["name"],
+        date_from=data["date_from"],  # если перейдёшь на Date — приведи к date
+        date_to=data["date_to"],
+        room=str(data["room"]),
+    )
+
+    session.add(order)
+    await session.commit()  # ВАЖНО
+
     await cb.message.answer("Бронь принята ✅\nМы свяжемся с вами.", reply_markup=come_menu())
-    session.add(Order(name = data["name"],
-                      date_from = data["date_from"],
-                      date_to = data["date_to"],
-                      room = ["room"]))
     await state.clear()
     await cb.answer()
 

@@ -6,10 +6,11 @@ from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 
 from dotenv import find_dotenv, load_dotenv
-from middlewares.db import DataBaseSession
+
 
 
 load_dotenv(find_dotenv())
+from middlewares.db import DataBaseSession
 from database.engine import create_db, drop_db, session_maker
 from client_handler import client_router
 
