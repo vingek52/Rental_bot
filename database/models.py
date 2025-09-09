@@ -1,17 +1,27 @@
-from sqlalchemy import DateTime, String, func
+from datetime import date, datetime
+from sqlalchemy import Date, DateTime, String, func
 from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped
 
 
 class Base(DeclarativeBase):
-    created: Mapped[DateTime] = mapped_column(DateTime, default=func.now())
-    updated: Mapped[DateTime] = mapped_column(DateTime, default=func.now(), onupdate=func.now())
+    """Базовый класс для всех моделей"""
+    pass
 
 
 class Order(Base):
     __tablename__ = "booking"
-    id : Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    name : Mapped[str] = mapped_column(String(150), nullable=False)
-    #num : Mapped[int] =  mapped_column(String(11), nullable=False)
-    date_from : Mapped[str] = mapped_column(String(150), nullable=False)
-    date_to : Mapped[str] = mapped_column(String(150), nullable=False)
-    room : Mapped[str] = mapped_column(String(10), nullable=False)
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(150), nullable=False)
+    phone: Mapped[str] = mapped_column(String(15), nullable=False)
+    
+    # Храним даты как реальные объекты Date
+    date_from: Mapped[date] = mapped_column(Date, nullable=False)
+    date_to: Mapped[date] = mapped_column(Date, nullable=False)
+    
+    
+    room: Mapped[str] = mapped_column(String(150), nullable=False)
+
+    
+    created: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    updated: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
